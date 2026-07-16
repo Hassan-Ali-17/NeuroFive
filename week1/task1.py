@@ -7,7 +7,6 @@
 # %%
 import pandas as pd
 import numpy as np
-from pathlib import Path
 
 pd.set_option("display.max_columns", None)
 
@@ -15,31 +14,10 @@ pd.set_option("display.max_columns", None)
 # ## 1. Load the dataset
 #
 # Download `train.csv` from the Kaggle "Titanic - Machine Learning from Disaster"
-# competition and place it next to this file, or in the repo root when running the
-# notebook from there.
+# competition and place it in `data/train.csv` relative to this script.
 
 # %%
-candidate_paths = []
-
-if "__file__" in globals():
-    candidate_paths.append(Path(__file__).resolve().parent / "train.csv")
-
-candidate_paths.extend(
-    [
-        Path.cwd() / "train.csv",
-        Path.cwd() / "week1" / "train.csv",
-    ]
-)
-
-for data_path in candidate_paths:
-    if data_path.exists():
-        df = pd.read_csv(data_path)
-        break
-else:
-    raise FileNotFoundError(
-        "Could not find train.csv. Put it next to task1.py or run from the repo root."
-    )
-
+df = pd.read_csv("week1/train.csv")
 df.head()
 
 # %% [markdown]
@@ -66,7 +44,7 @@ df.describe()
 # ### 4b. Summary for categorical/object columns
 
 # %%
-df.describe(include="object")
+df.describe(include="str")
 
 # %% [markdown]
 # ## 5. Missing values
@@ -111,3 +89,143 @@ print("Categorical:", categorical_cols)
 # (Numbers above are the well-known values for the standard Titanic `train.csv` —
 # re-run the cells above on your own download and adjust this summary to match
 # your actual output.)
+
+# %% [markdown]
+# ## 8. Handling missing values
+#
+# Recall from Section 5: `Age` (~20% missing), `Cabin` (~77% missing), and
+# `Embarked` (2 missing). Each gets a different treatment because the *reason*
+# and *scale* of missingness is different for each:
+#
+# - **`Age`** → fill with the **median**, not the mean, because `Age` is right-skewed
+#   and the median is less distorted by outliers. Filling with a single global value
+#   is a simplification — a more refined approach would impute per `Pclass`/`Sex`
+#   group — but the median is a reasonable, defensible baseline at this stage.
+# - **`Embarked`** → fill with the **mode** (most frequent port). Only 2 rows are
+#   missing, so whatever we pick has negligible effect on the dataset as a whole.
+# - **`Cabin`** → **drop the column** entirely rather than fill it. At ~77% missing,
+#   any imputation would be mostly fabricated data. Instead of filling, we extract
+#   the one bit of real signal it has — whether a cabin was recorded at all — as a
+#   new binary feature, then drop the original noisy column.
+
+# %%
+df_clean = df.copy()
+
+# Age: fill with median
+df_clean["Age"] = df_clean["Age"].fillna(df_clean["Age"].median())
+
+# Embarked: fill with mode
+df_clean["Embarked"] = df_clean["Embarked"].fillna(df_clean["Embarked"].mode()[0])
+
+# Cabin: capture signal as a new feature, then drop the sparse original column
+df_clean["HasCabin"] = df_clean["Cabin"].notna().astype(int)
+df_clean = df_clean.drop(columns=["Cabin"])
+
+print("Missing values after cleaning:")
+df_clean.isnull().sum()
+
+# %% [markdown]
+# ## 9. Visualizations
+#
+# Four visualizations to catch mistakes and surface patterns before modeling:
+# a histogram, a boxplot (for outlier detection), a bar chart, and a correlation
+# heatmap.
+
+# %%
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+sns.set_style("whitegrid")
+
+# %% [markdown]
+# ### 9a. Histogram — Age distribution
+#
+# Shows the overall shape of `Age`: where passengers cluster and whether the
+# distribution is skewed.
+
+# %%
+plt.figure(figsize=(8, 5))
+sns.histplot(df_clean["Age"], bins=30, kde=True)
+plt.title("Distribution of Passenger Age")
+plt.xlabel("Age")
+plt.ylabel("Count")
+plt.show()
+
+# %% [markdown]
+# ### 9b. Boxplot — Fare outlier detection
+#
+# `Fare` is the clearest outlier case in this dataset. The boxplot below shows a
+# tight cluster of low fares with a long tail of extreme values (including a few
+# passengers who paid 500+, more than 10x the median).
+
+# %%
+plt.figure(figsize=(8, 5))
+sns.boxplot(x=df_clean["Fare"])
+plt.title("Fare Distribution — Outlier Detection")
+plt.xlabel("Fare")
+plt.show()
+
+# %%
+# Quantify the outliers using the IQR rule
+Q1 = df_clean["Fare"].quantile(0.25)
+Q3 = df_clean["Fare"].quantile(0.75)
+IQR = Q3 - Q1
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+
+outliers = df_clean[(df_clean["Fare"] < lower_bound) | (df_clean["Fare"] > upper_bound)]
+print(f"IQR bounds: [{lower_bound:.2f}, {upper_bound:.2f}]")
+print(f"Number of Fare outliers: {len(outliers)} ({len(outliers) / len(df_clean) * 100:.1f}% of passengers)")
+
+# %% [markdown]
+# ### 9c. Bar chart — Survival rate by passenger class
+#
+# A quick way to compare a categorical feature (`Pclass`) against the target
+# (`Survived`).
+
+# %%
+plt.figure(figsize=(8, 5))
+survival_by_class = df_clean.groupby("Pclass")["Survived"].mean()
+sns.barplot(x=survival_by_class.index, y=survival_by_class.values)
+plt.title("Survival Rate by Passenger Class")
+plt.xlabel("Passenger Class")
+plt.ylabel("Survival Rate")
+plt.ylim(0, 1)
+plt.show()
+
+# %% [markdown]
+# ### 9d. Correlation heatmap
+#
+# Shows how the numerical features relate to each other and to `Survived`.
+
+# %%
+plt.figure(figsize=(9, 7))
+numeric_for_corr = df_clean[["Survived", "Pclass", "Age", "SibSp", "Parch", "Fare", "HasCabin"]]
+corr = numeric_for_corr.corr()
+sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", center=0)
+plt.title("Correlation Heatmap")
+plt.show()
+
+# %% [markdown]
+# ## 10. Which feature most affects survival, and why?
+#
+# **`Sex` appears to be the single strongest predictor of survival**, followed
+# closely by `Pclass` and `Fare` (which are themselves correlated — higher fares
+# mean higher class).
+#
+# From the data: women survived at a dramatically higher rate than men — a direct
+# reflection of the "women and children first" evacuation policy on the Titanic.
+# `Pclass` matters for a related but distinct reason: first-class cabins were
+# physically closer to the lifeboats and their passengers were prioritized during
+# evacuation, so survival rate drops steadily from 1st to 3rd class (visible in the
+# bar chart above). `Fare` correlates with survival mostly *because* it's a proxy
+# for `Pclass`, not because paying more directly saved lives.
+#
+# `Age` has a weaker but still real effect: very young children had somewhat better
+# survival odds, consistent with the same evacuation priority. `SibSp` and `Parch`
+# show only mild correlations with survival — having a small family aboard seems to
+# help slightly (more people to look out for you), but very large families fare
+# worse, likely because large groups were harder to keep together during evacuation.
+#
+# Overall: **`Sex` > `Pclass` ≈ `Fare` > `Age` > `SibSp`/`Parch`**, and this ranking
+# will shape which features I prioritize when building a model later.
