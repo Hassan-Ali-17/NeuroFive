@@ -7,6 +7,7 @@
 # %%
 import pandas as pd
 import numpy as np
+from pathlib import Path
 
 pd.set_option("display.max_columns", None)
 
@@ -14,10 +15,31 @@ pd.set_option("display.max_columns", None)
 # ## 1. Load the dataset
 #
 # Download `train.csv` from the Kaggle "Titanic - Machine Learning from Disaster"
-# competition and place it in `data/train.csv` relative to this script.
+# competition and place it next to this file, or in the repo root when running the
+# notebook from there.
 
 # %%
-df = pd.read_csv("data/train.csv")
+candidate_paths = []
+
+if "__file__" in globals():
+    candidate_paths.append(Path(__file__).resolve().parent / "train.csv")
+
+candidate_paths.extend(
+    [
+        Path.cwd() / "train.csv",
+        Path.cwd() / "week1" / "train.csv",
+    ]
+)
+
+for data_path in candidate_paths:
+    if data_path.exists():
+        df = pd.read_csv(data_path)
+        break
+else:
+    raise FileNotFoundError(
+        "Could not find train.csv. Put it next to task1.py or run from the repo root."
+    )
+
 df.head()
 
 # %% [markdown]
