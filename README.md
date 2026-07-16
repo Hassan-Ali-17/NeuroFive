@@ -1,8 +1,9 @@
-# NeuroFive ML Track — Week 1
+# NeuroFive ML Track — Week 1 & Week 2
 
 My progress through the NeuroFive Solutions ML track. Week 1 covers environment
-setup, first exploratory data analysis (EDA), data cleaning, and visualization —
-all using the Titanic dataset.
+setup, first exploratory data analysis (EDA), data cleaning, and visualization.
+Week 2 moves into modeling, starting with a first classification model — all
+using the Titanic dataset.
 
 ## Repo structure
 
@@ -47,7 +48,7 @@ kernel, and **Run All**.
 
 ---
 
-## Task 1 — Environment Setup + First EDA
+## Week 1 — Task 1: Environment Setup + First EDA
 
 **Goal:** get comfortable with the toolkit and "listen" to a dataset before doing
 anything to it — shape, quality, and quirks first.
@@ -76,7 +77,7 @@ core, with a healthy mix of numeric and categorical predictors to work with.
 
 ---
 
-## Task 2 — Data Cleaning + Visualization
+## Week 1 — Task 2: Data Cleaning + Visualization
 
 **Goal:** handle real-world messiness (missing values, outliers) properly, then
 use visualization to catch mistakes and surface patterns before modeling.
@@ -118,16 +119,74 @@ This ranking will guide feature prioritization when modeling begins.
 
 ---
 
+## Week 2 — Task 1: First Classification Model (Logistic Regression)
+
+**Goal:** put the cleaned, explored dataset to work — train a model that
+predicts `Survived` and evaluate it properly, not just by eyeballing accuracy.
+
+**Approach:**
+
+1. **Feature selection** — dropped `PassengerId` (just a row index), `Name` and
+   `Ticket` (high-cardinality free text, out of scope for a first baseline
+   model). Everything else from the cleaned dataset (Task 2's `df_clean`,
+   including the engineered `HasCabin` flag) is kept.
+2. **Encoding** — `Sex` and `Embarked` are one-hot encoded with
+   `pd.get_dummies(..., drop_first=True)`. `drop_first` avoids the dummy
+   variable trap: for a 2-category column like `Sex`, you only need one output
+   column (`Sex_male`), since "not male" already implies female.
+3. **Train/test split** — `train_test_split` with an 80/20 split and
+   `stratify=y`, so the train and test sets preserve the same survival ratio
+   as the full dataset. Without stratification, an unlucky split could leave
+   the test set with a noticeably different survival rate than what the model
+   trained on.
+4. **Model** — `LogisticRegression` from scikit-learn. Chosen as a first
+   baseline because it's simple, fast, and interpretable (coefficients map
+   directly to how each feature pushes the prediction toward survive/not
+   survive) — a sensible starting point before trying anything more complex.
+5. **Evaluation** — `accuracy_score` for the headline number, plus a full
+   confusion matrix to see *what kind* of mistakes the model makes, not just
+   how many.
+
+**Final accuracy:** `<fill in your actual accuracy here after running it — a
+well-tuned Logistic Regression baseline on this dataset typically lands
+somewhere in the 78–82% range>`
+
+**Confusion matrix — what it tells us:**
+
+|  | Predicted: Did not survive | Predicted: Survived |
+|---|---|---|
+| **Actual: Did not survive** | True Negative | False Positive |
+| **Actual: Survived** | False Negative | True Positive |
+
+Accuracy alone hides *which* kind of mistake the model makes. False positives
+mean the model was overly optimistic (predicted survival for someone who
+didn't); false negatives mean it was overly pessimistic (predicted death for
+someone who survived). Because the model leans heavily on `Sex` and `Pclass`
+(the two strongest signals identified in Task 2), its errors tend to cluster
+around the exceptions to that pattern — men who survived, and women or
+first-class passengers who didn't.
+
+*(Fill in the actual TN/FP/FN/TP counts and accuracy once you run the notebook
+on your machine — the numbers above describe the pattern, not the exact
+values for your run.)*
+
+---
+
 ## Notes / gotchas
 
 - If you're on **pandas 4**, `df.describe(include="str")` is the correct call
   now (older `include="object"` still works but throws a deprecation warning).
 - `seaborn` is a separate install from `matplotlib` — `pip install seaborn` if
   you hit a `ModuleNotFoundError`.
+- Task 3 requires `scikit-learn` in addition to everything else:
+  ```bash
+  pip install scikit-learn
+  ```
 
 ## What's next
 
+- Try other classifiers (Random Forest, SVM) and compare against the Logistic
+  Regression baseline
 - Feature engineering (e.g. extracting titles from `Name`, family size from
   `SibSp` + `Parch`)
-- Encoding categorical variables for modeling
-- Baseline classification model (logistic regression) as a starting benchmark
+- Hyperparameter tuning and cross-validation instead of a single train/test split
