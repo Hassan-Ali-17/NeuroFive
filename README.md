@@ -1,23 +1,36 @@
-# NeuroFive ML Track — Week 1 & Week 2
+```
+███╗   ██╗███████╗██╗   ██╗██████╗  ██████╗ ███████╗██╗██╗   ██╗███████╗
+████╗  ██║██╔════╝██║   ██║██╔══██╗██╔═══██╗██╔════╝██║██║   ██║██╔════╝
+██╔██╗ ██║█████╗  ██║   ██║██████╔╝██║   ██║█████╗  ██║██║   ██║█████╗
+██║╚██╗██║██╔══╝  ██║   ██║██╔══██╗██║   ██║██╔══╝  ██║╚██╗ ██╔╝██╔══╝
+██║ ╚████║███████╗╚██████╔╝██║  ██║╚██████╔╝██║     ██║ ╚████╔╝ ███████╗
+╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝  ╚═══╝  ╚══════╝
+```
+
+## ML Track — Week 1 & Week 2
 
 My progress through the NeuroFive Solutions ML track. Week 1 covers environment
 setup, first exploratory data analysis (EDA), data cleaning, and visualization.
-Week 2 moves into modeling, starting with a first classification model — all
-using the Titanic dataset.
+Week 2 moves into modeling, starting with a first classification model on the
+Titanic dataset, then a first regression model on the Ames Housing dataset.
 
 ## Repo structure
 
 ```
 neurofive-ml-track/
 ├── data/
-│   └── train.csv          # Titanic dataset (not committed — see below)
-├── eda_titanic.ipynb      # Jupyter notebook version
-├── eda_titanic.py         # Same content as a plain script (VS Code # %% cells)
+│   ├── train.csv                      # Titanic dataset (not committed — see below)
+│   └── train_house.csv                # Ames Housing dataset (not committed — see below)
+├── eda_titanic.ipynb                  # Jupyter notebook version
+├── eda_titanic.py                     # Same content as a plain script (VS Code # %% cells)
+├── housing_price_regression.ipynb     # Jupyter notebook version
+├── housing_price_regression.py        # Same content as a plain script (VS Code # %% cells)
 ├── .gitignore
 └── README.md
 ```
 
-`eda_titanic.py` and `eda_titanic.ipynb` contain identical content — the script
+`eda_titanic.py` / `eda_titanic.ipynb` and `housing_price_regression.py` /
+`housing_price_regression.ipynb` are each identical content pairs — the script
 uses `# %%` cell markers so it runs interactively in VS Code without needing a
 notebook file, and the notebook is generated from it for anyone who wants the
 classic Jupyter format with saved outputs.
@@ -25,25 +38,30 @@ classic Jupyter format with saved outputs.
 ## Setup
 
 ```bash
-pip install pandas numpy matplotlib seaborn
+pip install pandas numpy matplotlib seaborn scikit-learn
 ```
 
 No virtual environment required — a global Python install works fine for this.
 
-### Dataset
+### Datasets
 
-Download `train.csv` from the Kaggle competition
-["Titanic - Machine Learning from Disaster"](https://www.kaggle.com/c/titanic)
-(free Kaggle account required) and place it at `data/train.csv`. The dataset
-itself isn't committed to this repo — only the code that processes it.
+- **Titanic:** download `train.csv` from the Kaggle competition
+  ["Titanic - Machine Learning from Disaster"](https://www.kaggle.com/c/titanic)
+  (free Kaggle account required) and place it at `data/train.csv`.
+- **Ames Housing:** download `train.csv` from the Kaggle competition
+  ["House Prices - Advanced Regression Techniques"](https://www.kaggle.com/c/house-prices-advanced-regression-techniques)
+  (free Kaggle account required), rename it `train_house.csv`, and place it at
+  `data/train_house.csv`.
+
+Neither dataset is committed to this repo — only the code that processes them.
 
 ### Running it
 
-**As a script in VS Code:** open `eda_titanic.py`, click **Run Cell** above any
+**As a script in VS Code:** open the `.py` file, click **Run Cell** above any
 `# %%` block (or `Shift+Enter`). Output appears in VS Code's Interactive Window,
 one cell at a time — same experience as a notebook.
 
-**As a notebook:** open `eda_titanic.ipynb` in VS Code or Jupyter Lab, select a
+**As a notebook:** open the `.ipynb` file in VS Code or Jupyter Lab, select a
 kernel, and **Run All**.
 
 ---
@@ -172,13 +190,67 @@ values for your run.)*
 
 ---
 
+## Week 2 — Task 2: First Regression Model (Linear Regression)
+
+**Goal:** predict a continuous number instead of a category — regression
+instead of classification — using the **Ames Housing** dataset (Kaggle
+"House Prices - Advanced Regression Techniques" train set).
+
+**Approach:**
+
+1. **Feature selection** — the raw dataset has 81 columns, many with heavy
+   missing values (`PoolQC`, `Fence`, `Alley` are mostly NA because most
+   houses simply don't have those features). Rather than impute a large
+   messy set, five complete, high-signal columns were picked:
+   - `OverallQual` — overall material/finish quality (1–10); consistently the
+     single strongest predictor of sale price in this dataset
+   - `GrLivArea` — above-ground living area in square feet; the classic
+     "bigger house, higher price" driver
+   - `TotalBsmtSF` — total basement square footage
+   - `GarageCars` — garage size in car capacity; a proxy for both garage size
+     and overall home quality
+   - `YearBuilt` — year the house was originally built; newer homes tend to
+     sell for more, all else equal
+2. **Train/test split** — `train_test_split` with an 80/20 split
+   (`random_state=42` for reproducibility).
+3. **Model** — `LinearRegression` from scikit-learn, trained on the five
+   features to predict `SalePrice`.
+4. **Evaluation** — RMSE (in dollars, so it's directly interpretable as
+   "typical prediction error") and R² (share of price variation explained).
+5. **Visualization** — a predicted-vs-actual scatter plot with a diagonal
+   "perfect prediction" reference line, to see at a glance how tightly
+   predictions track reality (and where the model over/under-shoots).
+
+**Results:**
+
+| Metric | Value |
+|---|---|
+| RMSE | ~$39,763 |
+| R² | 0.79 |
+
+**What R² = 0.79 means, in plain English:** the model explains about 79% of
+why house prices differ from one home to another, using just five features
+(quality, size, basement size, garage size, and age). The remaining ~21% comes
+down to things the model doesn't see at all — neighborhood desirability,
+kitchen/bathroom finish quality, lot shape, recent renovations, and general
+market timing. It's not a grade out of 100 in the usual sense — it's a measure
+of "how much of the story does this model capture," and 0.79 means the model
+has genuinely learned a real pricing pattern, not just noise, even though it's
+far from perfect.
+
+*(These numbers come from a `random_state=42` split — re-running with a
+different split will shift them slightly, but the overall pattern should
+hold.)*
+
+---
+
 ## Notes / gotchas
 
 - If you're on **pandas 4**, `df.describe(include="str")` is the correct call
   now (older `include="object"` still works but throws a deprecation warning).
 - `seaborn` is a separate install from `matplotlib` — `pip install seaborn` if
   you hit a `ModuleNotFoundError`.
-- Task 3 requires `scikit-learn` in addition to everything else:
+- Both Week 2 tasks require `scikit-learn` in addition to everything else:
   ```bash
   pip install scikit-learn
   ```
@@ -187,6 +259,10 @@ values for your run.)*
 
 - Try other classifiers (Random Forest, SVM) and compare against the Logistic
   Regression baseline
+- Try other regressors (Random Forest, Gradient Boosting) and compare against
+  the Linear Regression baseline
 - Feature engineering (e.g. extracting titles from `Name`, family size from
-  `SibSp` + `Parch`)
-- Hyperparameter tuning and cross-validation instead of a single train/test split
+  `SibSp` + `Parch` for Titanic; total square footage, house age at sale for
+  Ames Housing)
+- Hyperparameter tuning and cross-validation instead of a single train/test
+  split
