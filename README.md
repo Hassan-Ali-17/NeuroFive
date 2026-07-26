@@ -5,17 +5,15 @@
 ██║╚██╗██║██╔══╝  ██║   ██║██╔══██╗██║   ██║██╔══╝  ██║╚██╗ ██╔╝██╔══╝
 ██║ ╚████║███████╗╚██████╔╝██║  ██║╚██████╔╝██║     ██║ ╚████╔╝ ███████╗
 ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝  ╚═══╝  ╚══════╝
-```
 
-## ML Track — Week 1, Week 2, Week 3 & Week 4
+## ML Track — Week 1 to Week 5
 
-My progress through the NeuroFive Solutions ML track. Week 1 covers environment
-setup, first exploratory data analysis (EDA), data cleaning, and visualization.
-Week 2 moves into modeling, starting with a first classification model on the
-Titanic dataset, then a first regression model on the Ames Housing dataset.
-Week 3 focuses on classification evaluation metrics (Precision, Recall, F1-score),
-hyperparameter tuning using cross-validated Grid Search, and Telco Customer Churn analysis.
-Week 4 focuses on Scikit-Learn pipelines, ColumnTransformers, custom feature engineering, and model serialization.
+My progress through the NeuroFive Solutions ML track:
+- **Week 1:** Environment setup, first exploratory data analysis (EDA), data cleaning, and visualization.
+- **Week 2:** Classification model (Titanic) and Regression model (Ames Housing).
+- **Week 3:** Advanced classification metrics, cross-validated Grid Search, and Telco Customer Churn.
+- **Week 4:** Pipelines, ColumnTransformers, custom feature engineering, and ensemble comparison (RandomForest vs XGBoost).
+- **Week 5:** Class imbalance handling (SMOTE/class weighting) on Telco Churn and evaluation metrics analysis.
 
 ## Repo structure
 
@@ -38,9 +36,15 @@ neurofive-ml-track/
 │   ├── train.csv                      # Titanic dataset
 │   └── WA_Fn-UseC_-Telco-Customer-Churn.csv # Telco Customer Churn dataset
 ├── week4/
+│   ├── feature_importances.png        # Feature importances comparison plot
 │   ├── task1.py                       # Titanic classification pipeline & feature engineering
+│   ├── task2.py                       # RandomForest vs XGBoost model comparison
 │   ├── titanic_pipeline.joblib        # Serialized pipeline model
 │   └── train.csv                      # Titanic dataset
+├── week5/
+│   ├── class_balance.png              # Churn class distribution plot
+│   ├── task1.py                       # Churn class imbalance handling & metrics comparison
+│   └── WA_Fn-UseC_-Telco-Customer-Churn.csv # Telco Customer Churn dataset
 ├── .gitignore
 └── README.md
 ```
@@ -369,3 +373,53 @@ By incorporating these features and regularizing our model (`max_depth=6` to pre
 ### Serialization
 - The final feature-engineered pipeline is serialized to `week4/titanic_pipeline.joblib` using `joblib`.
 - Reloading the pipeline via `joblib.load` verified that it reproduces the exact same predictions on new data.
+
+---
+
+## Week 4 — Task 2: RandomForest vs. XGBoost Model Comparison
+
+**Goal:** Train RandomForest and XGBoost ensemble models, compare their performance against a single model (Logistic Regression baseline), and plot/evaluate feature importances.
+
+### Model Performance Comparison
+All models were evaluated on the stratified Titanic test set:
+
+| Model | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Logistic Regression (Baseline)** | 80.45% | 79.31% | **66.67%** | **72.44%** | **84.32%** |
+| **Random Forest (Ensemble)** | 79.89% | **83.67%** | 59.42% | 69.49% | 84.15% |
+| **XGBoost (Ensemble)** | 80.45% | 80.36% | 65.22% | 72.00% | 81.22% |
+
+### Feature Importances Comparison
+The feature importances plot is saved at [feature_importances.png](file:///c:/Users/User/OneDrive%20-%20Higher%20Education%20Commission/Desktop/NeuroFive/week4/feature_importances.png).
+- **Random Forest** placed the highest importance on `Sex_male` (approx. 43%), followed by `Fare` (approx. 18%) and `Age` (approx. 12%).
+- **XGBoost** also heavily prioritized `Sex_male` (approx. 56%), followed by `Pclass_3` (approx. 17%) and `Fare` (approx. 7%).
+
+### Ensemble Model Aggregation Comparison
+- **Random Forest (Bagging):** Fits independent, fully-grown decision trees in parallel on bootstrapped subsets of the training data. The trees' final predictions are combined via voting or averaging, reducing model variance without increasing bias.
+- **XGBoost (Boosting):** Fits shallow, weak decision trees sequentially rather than in parallel. Each subsequent tree is trained to predict the residual errors (gradients of the loss function) of the previous ensemble, sequentially reducing model bias.
+
+---
+
+## Week 5 — Task 1: Handling Class Imbalanced Data on Telco Churn
+
+**Goal:** Check and visualize the class imbalance of the Telco Churn dataset, apply class weighting (`class_weight='balanced'`) to a Logistic Regression model, and compare performance metrics before and after.
+
+### Class Imbalance Visualization
+The class distribution is visualized in [class_balance.png](file:///c:/Users/User/OneDrive%20-%20Higher%20Education%20Commission/Desktop/NeuroFive/week5/class_balance.png).
+- **No Churn (Class 0):** 5163 customers (73.42%)
+- **Churn (Class 1):** 1869 customers (26.58%)
+
+### Model Performance Before vs. After Class Balancing
+Evaluating a Logistic Regression model on the test set:
+
+| Metric | Imbalanced Baseline | Balanced Model |
+| :--- | :--- | :--- |
+| **Accuracy** | **80.45%** | 72.57% |
+| **Precision (Churn)** | **65.05%** | 49.01% |
+| **Recall (Churn)** | 57.22% | **79.41%** |
+| **F1-Score (Churn)** | **60.88%** | 60.61% |
+
+- *Observation*: While the overall Accuracy drops, the **Recall (sensitivity)** for predicting churners jumps dramatically from **57.22%** to **79.41%**, capturing more at-risk customers.
+
+### Why Accuracy is a Misleading Metric
+Accuracy is highly misleading for imbalanced datasets because a naive model that always predicts the majority class ("No Churn") will achieve **73.42%** accuracy without identifying a single actual churner. Thus, accuracy rewards models for ignoring the minority class. In churn prediction, missing a customer who is about to leave (a false negative) carries a high business cost, making **Recall** and **F1-Score** much more informative performance indicators than overall accuracy.
