@@ -7,14 +7,15 @@
 ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝  ╚═══╝  ╚══════╝
 ```
 
-## ML Track — Week 1, Week 2 & Week 3
+## ML Track — Week 1, Week 2, Week 3 & Week 4
 
 My progress through the NeuroFive Solutions ML track. Week 1 covers environment
 setup, first exploratory data analysis (EDA), data cleaning, and visualization.
 Week 2 moves into modeling, starting with a first classification model on the
 Titanic dataset, then a first regression model on the Ames Housing dataset.
-Week 3 focuses on classification evaluation metrics (Precision, Recall, F1-score)
-and hyperparameter tuning using cross-validated Grid Search.
+Week 3 focuses on classification evaluation metrics (Precision, Recall, F1-score),
+hyperparameter tuning using cross-validated Grid Search, and Telco Customer Churn analysis.
+Week 4 focuses on Scikit-Learn pipelines, ColumnTransformers, custom feature engineering, and model serialization.
 
 ## Repo structure
 
@@ -33,6 +34,12 @@ neurofive-ml-track/
 │   └── train.csv                      # Titanic dataset
 ├── week3/
 │   ├── task1.py                       # Grid Search and classification report script
+│   ├── task2.py                       # Telco Customer Churn analysis (EDA, models, comparison)
+│   ├── train.csv                      # Titanic dataset
+│   └── WA_Fn-UseC_-Telco-Customer-Churn.csv # Telco Customer Churn dataset
+├── week4/
+│   ├── task1.py                       # Titanic classification pipeline & feature engineering
+│   ├── titanic_pipeline.joblib        # Serialized pipeline model
 │   └── train.csv                      # Titanic dataset
 ├── .gitignore
 └── README.md
@@ -300,3 +307,65 @@ Below is the comparison of the baseline model (default parameters, `C=1.0`, `pen
   Ames Housing)
 - Hyperparameter tuning and cross-validation instead of a single train/test
   split
+
+---
+
+## Week 3 — Task 2: Telco Customer Churn EDA & Model Comparison
+
+**Goal:** Perform EDA, address class imbalance, train Logistic Regression and Decision Tree models, identify top drivers of churn, and write a business summary.
+
+### Exploratory Data Analysis & Class Imbalance
+- **Dataset**: `WA_Fn-UseC_-Telco-Customer-Churn.csv` (7043 rows, 21 columns).
+- **Cleaning**: Cleaned empty spaces in `TotalCharges` (dropped 11 rows with 0 tenure, leaving 7032 rows).
+- **Class Imbalance**: 73.4% of customers have not churned ("No"), while 26.6% have churned ("Yes"). This significant class imbalance was addressed by utilizing `class_weight='balanced'` in model training.
+- **Key EDA Findings**:
+  - `tenure` has a strong negative correlation (-0.354) with churn (longer tenure = lower churn).
+  - Customers on Month-to-month contracts have a much higher churn rate (**42.7%**) than those on One-year (**11.3%**) or Two-year (**2.8%**) contracts.
+  - Fiber optic internet users churn at a rate of **41.9%**.
+
+### Model Performance Comparison
+Both models were trained using class balancing to account for the minority class:
+
+| Metric | Logistic Regression (Balanced) | Decision Tree (Depth=5, Balanced) |
+|---|---|---|
+| **Accuracy** | 72.49% | **73.35%** |
+| **Precision** | 48.93% | **49.92%** |
+| **Recall (Sensitivity)** | **79.68%** | 79.41% |
+| **F1-Score** | 60.63% | **61.30%** |
+| **ROC-AUC** | **83.52%** | 82.76% |
+
+- **Verdict**: Logistic Regression provided better overall class separation (higher ROC-AUC) and slightly better Recall (which is essential for proactively flagging churners).
+
+### Top 3 Drivers of Churn (Decision Tree)
+1. **`Contract_Month-to-month`** (Importance: 61.52%)
+2. **`tenure`** (Importance: 11.00%)
+3. **`InternetService_Fiber optic`** (Importance: 9.86%)
+
+---
+
+## Week 4 — Task 1: Scikit-Learn Pipeline & Custom Feature Engineering
+
+**Goal:** Build a robust, unified Scikit-Learn pipeline using `ColumnTransformer`, engineer custom features, and serialize the final model.
+
+### Preprocessing Pipeline Structure
+- **Numerical features** (`Age`, `Fare`, `SibSp`, `Parch`): Imputed with median values and scaled using `StandardScaler`.
+- **Categorical features** (`Pclass`, `Sex`, `Embarked`): Imputed with the most frequent value and encoded using `OneHotEncoder`.
+- **Validation**: Confirmed that the `ColumnTransformer` Pipeline produces identical accuracy (**80.45%**) and ROC-AUC (**84.20%**) to a manual preprocessing flow.
+
+### Custom Feature Engineering
+We implemented a custom transformer `TitanicFeatureExtractor` that constructs:
+1. **`FamilySize`** = `SibSp + Parch + 1` (combines sibling/spouse and parent/child features).
+2. **`IsAlone`** = `1` if `FamilySize == 1` else `0`.
+3. **`Title`** = Extracted titles from Name (e.g. Mr, Mrs, Miss, Master, Other) to represent passenger status.
+
+By incorporating these features and regularizing our model (`max_depth=6` to prevent overfitting), we achieved the following performance on the hold-out test set:
+
+| Model / Pipeline | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
+|---|---|---|---|---|---|
+| **Baseline Pipeline** | 80.45% | 79.37% | 66.67% | 72.46% | 84.20% |
+| **Engineered Pipeline** | **82.12%** | **81.36%** | **69.57%** | **75.00%** | **85.67%** |
+| **Improvement** | **+1.68%** | **+1.99%** | **+2.90%** | **+2.54%** | **+1.47%** |
+
+### Serialization
+- The final feature-engineered pipeline is serialized to `week4/titanic_pipeline.joblib` using `joblib`.
+- Reloading the pipeline via `joblib.load` verified that it reproduces the exact same predictions on new data.
