@@ -1,9 +1,13 @@
 import os
 import pandas as pd
 import numpy as np
-import joblib
 import streamlit as st
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestClassifier
 
 # ----------------------------------------------------
 # 1. CUSTOM CLASS DEFINITION (REQUIRED FOR JOBLIB LOAD)
@@ -134,27 +138,56 @@ st.markdown("""
 st.markdown('<h1 class="title-text">🚢 Titanic Survival Predictor</h1>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle-text">Enter passenger credentials below to predict their likelihood of surviving the historic voyage.</p>', unsafe_allow_html=True)
 
-# Determine the absolute path to the serialized pipeline
 script_dir = os.path.dirname(os.path.abspath(__file__))
-pipeline_path = os.path.join(script_dir, "..", "week4", "titanic_pipeline.joblib")
 
 @st.cache_resource
-def load_pipeline():
-    if not os.path.exists(pipeline_path):
-        # Fallback to local search if directory structure differs on deployment
-        alternative_path = os.path.join(script_dir, "titanic_pipeline.joblib")
-        if os.path.exists(alternative_path):
-            return joblib.load(alternative_path)
-        else:
-            raise FileNotFoundError(f"Model file not found at {pipeline_path} or {alternative_path}")
-    return joblib.load(pipeline_path)
+def load_and_train_pipeline():
+    # Load dataset
+    csv_path = os.path.join(script_dir, "train.csv")
+    df = pd.read_csv(csv_path)
+    
+    # Cast Pclass to string to make it categorical
+    df['Pclass'] = df['Pclass'].astype(str)
+    
+    # Define target and features
+    y = df['Survived']
+    X = df.drop(columns=['PassengerId', 'Survived'])
+    
+    # Baseline columns
+    num_cols_eng = ['Age', 'Fare', 'SibSp', 'Parch', 'FamilySize', 'IsAlone']
+    cat_cols_eng = ['Pclass', 'Sex', 'Embarked', 'Title']
+    
+    # Define Preprocessor
+    preprocessor_eng = ColumnTransformer(
+        transformers=[
+            ('num', Pipeline(steps=[
+                ('imputer', SimpleImputer(strategy='median')),
+                ('scaler', StandardScaler())
+            ]), num_cols_eng),
+            ('cat', Pipeline(steps=[
+                ('imputer', SimpleImputer(strategy='most_frequent')),
+                ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+            ]), cat_cols_eng)
+        ]
+    )
+    
+    # Create the full pipeline
+    pipeline = Pipeline(steps=[
+        ('feat_eng', TitanicFeatureExtractor()),
+        ('preprocessor', preprocessor_eng),
+        ('classifier', RandomForestClassifier(n_estimators=100, max_depth=6, random_state=42))
+    ])
+    
+    # Fit the pipeline on the full dataset
+    pipeline.fit(X, y)
+    return pipeline
 
 try:
-    pipeline = load_pipeline()
+    pipeline = load_and_train_pipeline()
     model_loaded = True
 except Exception as e:
-    st.error(f"Error loading model pipeline: {str(e)}")
-    st.warning("Please ensure 'titanic_pipeline.joblib' is generated in week4 directory or placed alongside this script.")
+    st.error(f"Error building model pipeline: {str(e)}")
+    st.warning("Please ensure 'train.csv' is present in the week5 directory.")
     model_loaded = False
 
 # ----------------------------------------------------
