@@ -5,16 +5,23 @@
 ██║╚██╗██║██╔══╝  ██║   ██║██╔══██╗██║   ██║██╔══╝  ██║╚██╗ ██╔╝██╔══╝
 ██║ ╚████║███████╗╚██████╔╝██║  ██║╚██████╔╝██║     ██║ ╚████╔╝ ███████╗
 ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝  ╚═══╝  ╚══════╝
+```
 
-## ML Track — Week 1 to Week 6
+# NeuroFive Solutions — ML Track
 
-My progress through the NeuroFive Solutions ML track:
-- **Week 1:** Environment setup, first exploratory data analysis (EDA), data cleaning, and visualization.
-- **Week 2:** Classification model (Titanic) and Regression model (Ames Housing).
-- **Week 3:** Advanced classification metrics, cross-validated Grid Search, and Telco Customer Churn.
-- **Week 4:** Pipelines, ColumnTransformers, custom feature engineering, and ensemble comparison (RandomForest vs XGBoost).
-- **Week 5:** Class imbalance handling (class weighting) on Telco Churn, metric analysis, and building/deploying a Streamlit web app for Titanic Survival Prediction.
-- **Week 6:** Capstone Project — Breast Cancer Wisconsin tumor classification, model benchmarking, and multi-tab Streamlit dashboard deployment.
+My progress through the NeuroFive Solutions ML track, from foundational EDA
+through pipeline engineering to a deployed capstone diagnostic app.
+
+## Progress overview
+
+| Week | Focus |
+|---|---|
+| **1** | Environment setup, first exploratory data analysis (EDA), data cleaning, and visualization |
+| **2** | Classification model (Titanic) and regression model (Ames Housing) |
+| **3** | Advanced classification metrics, cross-validated Grid Search, and Telco Customer Churn |
+| **4** | Pipelines, ColumnTransformers, custom feature engineering, and ensemble comparison (Random Forest vs. XGBoost) |
+| **5** | Class imbalance handling (class weighting) on Telco Churn, metric analysis, and a deployed Streamlit web app for Titanic survival prediction |
+| **6** | Capstone project — Breast Cancer Wisconsin tumor classification, model benchmarking, and a multi-tab Streamlit dashboard deployment |
 
 ## Repo structure
 
@@ -47,17 +54,17 @@ neurofive-ml-track/
 │   ├── task1.py                       # Churn class imbalance handling & metrics comparison
 │   ├── task2.py                       # Titanic survival predictor Streamlit app
 │   └── WA_Fn-UseC_-Telco-Customer-Churn.csv # Telco Customer Churn dataset
-├── week 6/
+├── week6/
 │   └── final.py                       # Breast cancer diagnostic Streamlit app (Capstone)
 ├── .gitignore
 └── README.md
 ```
 
-`eda_titanic.py` / `eda_titanic.ipynb` and `housing_price_regression.py` /
-`housing_price_regression.ipynb` are each identical content pairs — the script
-uses `# %%` cell markers so it runs interactively in VS Code without needing a
-notebook file, and the notebook is generated from it for anyone who wants the
-classic Jupyter format with saved outputs.
+> `eda_titanic.py` / `eda_titanic.ipynb` and `housing_price_regression.py` /
+> `housing_price_regression.ipynb` are each identical content pairs — the
+> script uses `# %%` cell markers so it runs interactively in VS Code without
+> needing a notebook file, and the notebook is generated from it for anyone
+> who wants the classic Jupyter format with saved outputs.
 
 ## Setup
 
@@ -65,7 +72,7 @@ classic Jupyter format with saved outputs.
 pip install pandas numpy matplotlib seaborn scikit-learn
 ```
 
-No virtual environment required — a global Python install works fine for this.
+No virtual environment is required — a global Python install works fine for this.
 
 ### Datasets
 
@@ -81,9 +88,9 @@ Neither dataset is committed to this repo — only the code that processes them.
 
 ### Running it
 
-**As a script in VS Code:** open the `.py` file, click **Run Cell** above any
-`# %%` block (or `Shift+Enter`). Output appears in VS Code's Interactive Window,
-one cell at a time — same experience as a notebook.
+**As a script in VS Code:** open the `.py` file and click **Run Cell** above
+any `# %%` block (or `Shift+Enter`). Output appears in VS Code's Interactive
+Window, one cell at a time — the same experience as a notebook.
 
 **As a notebook:** open the `.ipynb` file in VS Code or Jupyter Lab, select a
 kernel, and **Run All**.
@@ -92,8 +99,8 @@ kernel, and **Run All**.
 
 ## Week 1 — Task 1: Environment Setup + First EDA
 
-**Goal:** get comfortable with the toolkit and "listen" to a dataset before doing
-anything to it — shape, quality, and quirks first.
+**Goal:** get comfortable with the toolkit and "listen" to a dataset before
+doing anything to it — shape, quality, and quirks first.
 
 **What it covers:**
 - Loading data with `pandas.read_csv()`
@@ -114,28 +121,28 @@ anything to it — shape, quality, and quirks first.
 | Target variable | `Survived` (binary: 0 = did not survive, 1 = survived) |
 
 `Fare` and `Age` are both right-skewed, with `Fare` in particular having a long
-tail of high-paying outliers. This is a binary classification problem at its
-core, with a healthy mix of numeric and categorical predictors to work with.
+tail of high-paying outliers. This is fundamentally a binary classification
+problem, with a healthy mix of numeric and categorical predictors to work with.
 
 ---
 
 ## Week 1 — Task 2: Data Cleaning + Visualization
 
-**Goal:** handle real-world messiness (missing values, outliers) properly, then
-use visualization to catch mistakes and surface patterns before modeling.
+**Goal:** handle real-world messiness (missing values, outliers) properly,
+then use visualization to catch mistakes and surface patterns before modeling.
 
 **Missing value strategy** (justified, not just applied):
 
 | Column | Missing | Strategy | Why |
 |---|---|---|---|
 | `Age` | ~20% | Fill with **median** | Right-skewed distribution — median resists the pull of outliers better than mean |
-| `Embarked` | 2 rows | Fill with **mode** | Negligible amount of missing data, mode is a safe default |
+| `Embarked` | 2 rows | Fill with **mode** | Negligible amount of missing data; mode is a safe default |
 | `Cabin` | ~77% | **Drop column**, keep a `HasCabin` flag | Too sparse to impute meaningfully; whether a cabin was *recorded at all* still carries signal, so it's kept as a binary feature instead of fabricating cabin values |
 
 **Outlier detection:** `Fare` was checked with a boxplot and the IQR rule
-(`Q1 - 1.5×IQR` to `Q3 + 1.5×IQR`). A meaningful chunk of passengers fall outside
-that range — a handful paid 500+, over 10x the median fare — confirming what the
-boxplot shows visually.
+(`Q1 - 1.5×IQR` to `Q3 + 1.5×IQR`). A meaningful chunk of passengers fall
+outside that range — a handful paid 500+, over 10x the median fare —
+confirming what the boxplot shows visually.
 
 **Visualizations (4 required, all included):**
 1. **Histogram** — `Age` distribution
@@ -146,18 +153,18 @@ boxplot shows visually.
 **Which feature most affects survival, and why?**
 
 `Sex` is the strongest single predictor — women survived at a far higher rate
-than men, reflecting the "women and children first" evacuation policy. `Pclass`
-matters for a related but separate reason: first-class passengers were berthed
-closer to the lifeboats and were prioritized during evacuation, so survival rate
-drops steadily from 1st to 3rd class. `Fare` correlates with survival mostly
-*because* it's a proxy for `Pclass`, not because paying more directly helped.
-`Age` has a smaller effect (children fared slightly better), and family-size
-features (`SibSp`, `Parch`) show only mild correlation — small families seem to
-help a little, very large ones seem to hurt.
+than men, reflecting the "women and children first" evacuation policy.
+`Pclass` matters for a related but separate reason: first-class passengers
+were berthed closer to the lifeboats and were prioritized during evacuation,
+so survival rate drops steadily from 1st to 3rd class. `Fare` correlates with
+survival mostly *because* it's a proxy for `Pclass`, not because paying more
+directly helped. `Age` has a smaller effect (children fared slightly better),
+and family-size features (`SibSp`, `Parch`) show only mild correlation —
+small families seem to help a little, very large ones seem to hurt.
 
 **Overall ranking:** `Sex` > `Pclass` ≈ `Fare` > `Age` > `SibSp` / `Parch`
 
-This ranking will guide feature prioritization when modeling begins.
+This ranking guides feature prioritization for modeling.
 
 ---
 
@@ -168,19 +175,19 @@ predicts `Survived` and evaluate it properly, not just by eyeballing accuracy.
 
 **Approach:**
 
-1. **Feature selection** — dropped `PassengerId` (just a row index), `Name` and
-   `Ticket` (high-cardinality free text, out of scope for a first baseline
-   model). Everything else from the cleaned dataset (Task 2's `df_clean`,
-   including the engineered `HasCabin` flag) is kept.
+1. **Feature selection** — dropped `PassengerId` (just a row index), `Name`
+   and `Ticket` (high-cardinality free text, out of scope for a first
+   baseline model). Everything else from the cleaned dataset (Task 2's
+   `df_clean`, including the engineered `HasCabin` flag) is kept.
 2. **Encoding** — `Sex` and `Embarked` are one-hot encoded with
    `pd.get_dummies(..., drop_first=True)`. `drop_first` avoids the dummy
-   variable trap: for a 2-category column like `Sex`, you only need one output
-   column (`Sex_male`), since "not male" already implies female.
+   variable trap: for a 2-category column like `Sex`, you only need one
+   output column (`Sex_male`), since "not male" already implies female.
 3. **Train/test split** — `train_test_split` with an 80/20 split and
    `stratify=y`, so the train and test sets preserve the same survival ratio
    as the full dataset. Without stratification, an unlucky split could leave
-   the test set with a noticeably different survival rate than what the model
-   trained on.
+   the test set with a noticeably different survival rate than what the
+   model trained on.
 4. **Model** — `LogisticRegression` from scikit-learn. Chosen as a first
    baseline because it's simple, fast, and interpretable (coefficients map
    directly to how each feature pushes the prediction toward survive/not
@@ -218,15 +225,15 @@ instead of classification — using the **Ames Housing** dataset (Kaggle
 
 1. **Feature selection** — the raw dataset has 81 columns, many with heavy
    missing values (`PoolQC`, `Fence`, `Alley` are mostly NA because most
-   houses simply don't have those features). Rather than impute a large
+   houses simply don't have those features). Rather than impute a large,
    messy set, five complete, high-signal columns were picked:
-   - `OverallQual` — overall material/finish quality (1–10); consistently the
-     single strongest predictor of sale price in this dataset
+   - `OverallQual` — overall material/finish quality (1–10); consistently
+     the single strongest predictor of sale price in this dataset
    - `GrLivArea` — above-ground living area in square feet; the classic
      "bigger house, higher price" driver
    - `TotalBsmtSF` — total basement square footage
-   - `GarageCars` — garage size in car capacity; a proxy for both garage size
-     and overall home quality
+   - `GarageCars` — garage size in car capacity; a proxy for both garage
+     size and overall home quality
    - `YearBuilt` — year the house was originally built; newer homes tend to
      sell for more, all else equal
 2. **Train/test split** — `train_test_split` with an 80/20 split
@@ -248,13 +255,13 @@ instead of classification — using the **Ames Housing** dataset (Kaggle
 
 **What R² = 0.79 means, in plain English:** the model explains about 79% of
 why house prices differ from one home to another, using just five features
-(quality, size, basement size, garage size, and age). The remaining ~21% comes
-down to things the model doesn't see at all — neighborhood desirability,
-kitchen/bathroom finish quality, lot shape, recent renovations, and general
-market timing. It's not a grade out of 100 in the usual sense — it's a measure
-of "how much of the story does this model capture," and 0.79 means the model
-has genuinely learned a real pricing pattern, not just noise, even though it's
-far from perfect.
+(quality, size, basement size, garage size, and age). The remaining ~21%
+comes down to things the model doesn't see at all — neighborhood
+desirability, kitchen/bathroom finish quality, lot shape, recent
+renovations, and general market timing. It's not a grade out of 100 in the
+usual sense — it's a measure of "how much of the story does this model
+capture," and 0.79 means the model has genuinely learned a real pricing
+pattern, not just noise, even though it's far from perfect.
 
 *(These numbers come from a `random_state=42` split — re-running with a
 different split will shift them slightly, but the overall pattern should
@@ -264,23 +271,38 @@ hold.)*
 
 ## Week 3 — Task 1: Classification Metrics & Hyperparameter Tuning
 
-**Goal:** Evaluate a classification model using advanced metrics (Precision, Recall, F1-score) and perform hyperparameter tuning using cross-validated Grid Search.
+**Goal:** evaluate a classification model using advanced metrics (precision,
+recall, F1-score) and perform hyperparameter tuning using cross-validated
+Grid Search.
 
-### Why Accuracy Alone is Misleading for Imbalanced Datasets
-Accuracy measures the proportion of correct predictions out of all predictions. While simple, it can be extremely misleading when classes are highly imbalanced. For example, if a dataset contains 95% non-survivors and 5% survivors, a naive classifier that predicts "did not survive" for everyone will achieve 95% accuracy. However, this model completely fails to identify survivors (Recall of 0% and Precision of 0% for survivors). 
-By evaluating metrics like **Precision** (avoiding false positives), **Recall** (avoiding false negatives), and **F1-score** (harmonic mean of the two), we get a realistic picture of how the model performs on the minority class of interest.
+### Why accuracy alone is misleading for imbalanced datasets
+
+Accuracy measures the proportion of correct predictions out of all
+predictions. While simple, it can be extremely misleading when classes are
+highly imbalanced. For example, if a dataset contains 95% non-survivors and
+5% survivors, a naive classifier that predicts "did not survive" for
+everyone will achieve 95% accuracy — yet it completely fails to identify
+survivors (0% recall and 0% precision for survivors). By evaluating metrics
+like **precision** (avoiding false positives), **recall** (avoiding false
+negatives), and **F1-score** (harmonic mean of the two), we get a realistic
+picture of how the model performs on the minority class of interest.
 
 ### Tuning & Grid Search
-We tuned the Logistic Regression model using `GridSearchCV` with 5-fold cross-validation. The tuned hyperparameters were:
-- `C` (Inverse of regularization strength): tested `[0.001, 0.01, 0.1, 1, 10, 100]`
-- `penalty` (Regularization type): tested `['l1', 'l2']` with `liblinear` solver.
+
+We tuned the Logistic Regression model using `GridSearchCV` with 5-fold
+cross-validation. The tuned hyperparameters were:
+- `C` (inverse of regularization strength): tested `[0.001, 0.01, 0.1, 1, 10, 100]`
+- `penalty` (regularization type): tested `['l1', 'l2']` with the `liblinear` solver
 
 The grid search identified the best parameters on the training set:
-- **Best Hyperparameters:** `{'C': 0.1, 'penalty': 'l2'}`
-- **Best Cross-Validation (CV) Accuracy:** 79.79%
+- **Best hyperparameters:** `{'C': 0.1, 'penalty': 'l2'}`
+- **Best cross-validation (CV) accuracy:** 79.79%
 
-### Performance Comparison: Before vs After
-Below is the comparison of the baseline model (default parameters, `C=1.0`, `penalty='l2'`) and the tuned model (`C=0.1`, `penalty='l2'`) evaluated on the holdout test set (20% of the data):
+### Performance comparison: before vs. after
+
+Comparison of the baseline model (default parameters, `C=1.0`,
+`penalty='l2'`) and the tuned model (`C=0.1`, `penalty='l2'`), both
+evaluated on the holdout test set (20% of the data):
 
 | Metric | Baseline Model | Tuned Model |
 |---|---|---|
@@ -289,16 +311,22 @@ Below is the comparison of the baseline model (default parameters, `C=1.0`, `pen
 | **Recall (Survived)** | 69.57% | 62.32% |
 | **F1-Score (Survived)** | 73.28% | 69.35% |
 
-*Note on results:* Although the tuned model achieved a better and more robust cross-validation score during search, the test accuracy was slightly lower than the baseline. This can happen due to minor variance on a relatively small test set (179 samples), or because the baseline's default regularization strength happened to align slightly better with the test set sample split.
+*Note on results:* although the tuned model achieved a better and more
+robust cross-validation score during search, the test accuracy was slightly
+lower than the baseline. This can happen due to minor variance on a
+relatively small test set (179 samples), or because the baseline's default
+regularization strength happened to align slightly better with this
+particular test split.
 
 ---
 
 ## Notes / gotchas
 
-- If you're on **pandas 4**, `df.describe(include="str")` is the correct call
-  now (older `include="object"` still works but throws a deprecation warning).
-- `seaborn` is a separate install from `matplotlib` — `pip install seaborn` if
-  you hit a `ModuleNotFoundError`.
+- If you're on **pandas 4**, `df.describe(include="str")` is the correct
+  call now (the older `include="object"` still works but throws a
+  deprecation warning).
+- `seaborn` is a separate install from `matplotlib` — run
+  `pip install seaborn` if you hit a `ModuleNotFoundError`.
 - Both Week 2 tasks require `scikit-learn` in addition to everything else:
   ```bash
   pip install scikit-learn
@@ -306,13 +334,13 @@ Below is the comparison of the baseline model (default parameters, `C=1.0`, `pen
 
 ## What's next
 
-- Try other classifiers (Random Forest, SVM) and compare against the Logistic
-  Regression baseline
-- Try other regressors (Random Forest, Gradient Boosting) and compare against
-  the Linear Regression baseline
+- Try other classifiers (Random Forest, SVM) and compare against the
+  Logistic Regression baseline
+- Try other regressors (Random Forest, Gradient Boosting) and compare
+  against the Linear Regression baseline
 - Feature engineering (e.g. extracting titles from `Name`, family size from
-  `SibSp` + `Parch` for Titanic; total square footage, house age at sale for
-  Ames Housing)
+  `SibSp` + `Parch` for Titanic; total square footage, house age at sale
+  for Ames Housing)
 - Hyperparameter tuning and cross-validation instead of a single train/test
   split
 
@@ -320,18 +348,28 @@ Below is the comparison of the baseline model (default parameters, `C=1.0`, `pen
 
 ## Week 3 — Task 2: Telco Customer Churn EDA & Model Comparison
 
-**Goal:** Perform EDA, address class imbalance, train Logistic Regression and Decision Tree models, identify top drivers of churn, and write a business summary.
+**Goal:** perform EDA, address class imbalance, train Logistic Regression
+and Decision Tree models, identify the top drivers of churn, and write a
+business summary.
 
-### Exploratory Data Analysis & Class Imbalance
-- **Dataset**: `WA_Fn-UseC_-Telco-Customer-Churn.csv` (7043 rows, 21 columns).
-- **Cleaning**: Cleaned empty spaces in `TotalCharges` (dropped 11 rows with 0 tenure, leaving 7032 rows).
-- **Class Imbalance**: 73.4% of customers have not churned ("No"), while 26.6% have churned ("Yes"). This significant class imbalance was addressed by utilizing `class_weight='balanced'` in model training.
-- **Key EDA Findings**:
-  - `tenure` has a strong negative correlation (-0.354) with churn (longer tenure = lower churn).
-  - Customers on Month-to-month contracts have a much higher churn rate (**42.7%**) than those on One-year (**11.3%**) or Two-year (**2.8%**) contracts.
+### Exploratory data analysis & class imbalance
+
+- **Dataset:** `WA_Fn-UseC_-Telco-Customer-Churn.csv` (7,043 rows, 21 columns).
+- **Cleaning:** cleaned empty spaces in `TotalCharges` (dropped 11 rows with
+  0 tenure, leaving 7,032 rows).
+- **Class imbalance:** 73.4% of customers have not churned ("No"), while
+  26.6% have churned ("Yes"). This significant class imbalance was addressed
+  by using `class_weight='balanced'` in model training.
+- **Key EDA findings:**
+  - `tenure` has a strong negative correlation (-0.354) with churn (longer
+    tenure = lower churn).
+  - Customers on month-to-month contracts have a much higher churn rate
+    (**42.7%**) than those on one-year (**11.3%**) or two-year (**2.8%**)
+    contracts.
   - Fiber optic internet users churn at a rate of **41.9%**.
 
-### Model Performance Comparison
+### Model performance comparison
+
 Both models were trained using class balancing to account for the minority class:
 
 | Metric | Logistic Regression (Balanced) | Decision Tree (Depth=5, Balanced) |
@@ -342,9 +380,12 @@ Both models were trained using class balancing to account for the minority class
 | **F1-Score** | 60.63% | **61.30%** |
 | **ROC-AUC** | **83.52%** | 82.76% |
 
-- **Verdict**: Logistic Regression provided better overall class separation (higher ROC-AUC) and slightly better Recall (which is essential for proactively flagging churners).
+**Verdict:** Logistic Regression provided better overall class separation
+(higher ROC-AUC) and slightly better recall (which is essential for
+proactively flagging churners).
 
-### Top 3 Drivers of Churn (Decision Tree)
+### Top 3 drivers of churn (Decision Tree)
+
 1. **`Contract_Month-to-month`** (Importance: 61.52%)
 2. **`tenure`** (Importance: 11.00%)
 3. **`InternetService_Fiber optic`** (Importance: 9.86%)
@@ -353,20 +394,32 @@ Both models were trained using class balancing to account for the minority class
 
 ## Week 4 — Task 1: Scikit-Learn Pipeline & Custom Feature Engineering
 
-**Goal:** Build a robust, unified Scikit-Learn pipeline using `ColumnTransformer`, engineer custom features, and serialize the final model.
+**Goal:** build a robust, unified scikit-learn pipeline using
+`ColumnTransformer`, engineer custom features, and serialize the final model.
 
-### Preprocessing Pipeline Structure
-- **Numerical features** (`Age`, `Fare`, `SibSp`, `Parch`): Imputed with median values and scaled using `StandardScaler`.
-- **Categorical features** (`Pclass`, `Sex`, `Embarked`): Imputed with the most frequent value and encoded using `OneHotEncoder`.
-- **Validation**: Confirmed that the `ColumnTransformer` Pipeline produces identical accuracy (**80.45%**) and ROC-AUC (**84.20%**) to a manual preprocessing flow.
+### Preprocessing pipeline structure
 
-### Custom Feature Engineering
-We implemented a custom transformer `TitanicFeatureExtractor` that constructs:
-1. **`FamilySize`** = `SibSp + Parch + 1` (combines sibling/spouse and parent/child features).
-2. **`IsAlone`** = `1` if `FamilySize == 1` else `0`.
-3. **`Title`** = Extracted titles from Name (e.g. Mr, Mrs, Miss, Master, Other) to represent passenger status.
+- **Numerical features** (`Age`, `Fare`, `SibSp`, `Parch`): imputed with
+  median values and scaled using `StandardScaler`.
+- **Categorical features** (`Pclass`, `Sex`, `Embarked`): imputed with the
+  most frequent value and encoded using `OneHotEncoder`.
+- **Validation:** confirmed that the `ColumnTransformer` pipeline produces
+  identical accuracy (**80.45%**) and ROC-AUC (**84.20%**) to a manual
+  preprocessing flow.
 
-By incorporating these features and regularizing our model (`max_depth=6` to prevent overfitting), we achieved the following performance on the hold-out test set:
+### Custom feature engineering
+
+We implemented a custom transformer, `TitanicFeatureExtractor`, that
+constructs:
+1. **`FamilySize`** = `SibSp + Parch + 1` (combines sibling/spouse and
+   parent/child features)
+2. **`IsAlone`** = `1` if `FamilySize == 1` else `0`
+3. **`Title`** = extracted titles from `Name` (e.g. Mr, Mrs, Miss, Master,
+   Other) to represent passenger status
+
+By incorporating these features and regularizing the model
+(`max_depth=6` to prevent overfitting), we achieved the following
+performance on the hold-out test set:
 
 | Model / Pipeline | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
 |---|---|---|---|---|---|
@@ -375,16 +428,22 @@ By incorporating these features and regularizing our model (`max_depth=6` to pre
 | **Improvement** | **+1.68%** | **+1.99%** | **+2.90%** | **+2.54%** | **+1.47%** |
 
 ### Serialization
-- The final feature-engineered pipeline is serialized to `week4/titanic_pipeline.joblib` using `joblib`.
-- Reloading the pipeline via `joblib.load` verified that it reproduces the exact same predictions on new data.
+
+- The final feature-engineered pipeline is serialized to
+  `week4/titanic_pipeline.joblib` using `joblib`.
+- Reloading the pipeline via `joblib.load` verified that it reproduces the
+  exact same predictions on new data.
 
 ---
 
 ## Week 4 — Task 2: RandomForest vs. XGBoost Model Comparison
 
-**Goal:** Train RandomForest and XGBoost ensemble models, compare their performance against a single model (Logistic Regression baseline), and plot/evaluate feature importances.
+**Goal:** train Random Forest and XGBoost ensemble models, compare their
+performance against a single model (the Logistic Regression baseline), and
+plot/evaluate feature importances.
 
-### Model Performance Comparison
+### Model performance comparison
+
 All models were evaluated on the stratified Titanic test set:
 
 | Model | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
@@ -393,27 +452,43 @@ All models were evaluated on the stratified Titanic test set:
 | **Random Forest (Ensemble)** | 79.89% | **83.67%** | 59.42% | 69.49% | 84.15% |
 | **XGBoost (Ensemble)** | 80.45% | 80.36% | 65.22% | 72.00% | 81.22% |
 
-### Feature Importances Comparison
-The feature importances plot is saved at [feature_importances.png](file:///c:/Users/User/OneDrive%20-%20Higher%20Education%20Commission/Desktop/NeuroFive/week4/feature_importances.png).
-- **Random Forest** placed the highest importance on `Sex_male` (approx. 43%), followed by `Fare` (approx. 18%) and `Age` (approx. 12%).
-- **XGBoost** also heavily prioritized `Sex_male` (approx. 56%), followed by `Pclass_3` (approx. 17%) and `Fare` (approx. 7%).
+### Feature importances comparison
 
-### Ensemble Model Aggregation Comparison
-- **Random Forest (Bagging):** Fits independent, fully-grown decision trees in parallel on bootstrapped subsets of the training data. The trees' final predictions are combined via voting or averaging, reducing model variance without increasing bias.
-- **XGBoost (Boosting):** Fits shallow, weak decision trees sequentially rather than in parallel. Each subsequent tree is trained to predict the residual errors (gradients of the loss function) of the previous ensemble, sequentially reducing model bias.
+The feature importances plot is saved at
+[feature_importances.png](file:///c:/Users/User/OneDrive%20-%20Higher%20Education%20Commission/Desktop/NeuroFive/week4/feature_importances.png).
+- **Random Forest** placed the highest importance on `Sex_male`
+  (approx. 43%), followed by `Fare` (approx. 18%) and `Age` (approx. 12%).
+- **XGBoost** also heavily prioritized `Sex_male` (approx. 56%), followed by
+  `Pclass_3` (approx. 17%) and `Fare` (approx. 7%).
+
+### Ensemble model aggregation comparison
+
+- **Random Forest (Bagging):** fits independent, fully-grown decision trees
+  in parallel on bootstrapped subsets of the training data. The trees' final
+  predictions are combined via voting or averaging, reducing model variance
+  without increasing bias.
+- **XGBoost (Boosting):** fits shallow, weak decision trees sequentially
+  rather than in parallel. Each subsequent tree is trained to predict the
+  residual errors (gradients of the loss function) of the previous ensemble,
+  sequentially reducing model bias.
 
 ---
 
-## Week 5 — Task 1: Handling Class Imbalanced Data on Telco Churn
+## Week 5 — Task 1: Handling Class-Imbalanced Data on Telco Churn
 
-**Goal:** Check and visualize the class imbalance of the Telco Churn dataset, apply class weighting (`class_weight='balanced'`) to a Logistic Regression model, and compare performance metrics before and after.
+**Goal:** check and visualize the class imbalance of the Telco Churn
+dataset, apply class weighting (`class_weight='balanced'`) to a Logistic
+Regression model, and compare performance metrics before and after.
 
-### Class Imbalance Visualization
-The class distribution is visualized in [class_balance.png](file:///c:/Users/User/OneDrive%20-%20Higher%20Education%20Commission/Desktop/NeuroFive/week5/class_balance.png).
-- **No Churn (Class 0):** 5163 customers (73.42%)
-- **Churn (Class 1):** 1869 customers (26.58%)
+### Class imbalance visualization
 
-### Model Performance Before vs. After Class Balancing
+The class distribution is visualized in
+[class_balance.png](file:///c:/Users/User/OneDrive%20-%20Higher%20Education%20Commission/Desktop/NeuroFive/week5/class_balance.png).
+- **No Churn (Class 0):** 5,163 customers (73.42%)
+- **Churn (Class 1):** 1,869 customers (26.58%)
+
+### Model performance before vs. after class balancing
+
 Evaluating a Logistic Regression model on the test set:
 
 | Metric | Imbalanced Baseline | Balanced Model |
@@ -423,24 +498,41 @@ Evaluating a Logistic Regression model on the test set:
 | **Recall (Churn)** | 57.22% | **79.41%** |
 | **F1-Score (Churn)** | **60.88%** | 60.61% |
 
-- *Observation*: While the overall Accuracy drops, the **Recall (sensitivity)** for predicting churners jumps dramatically from **57.22%** to **79.41%**, capturing more at-risk customers.
+**Observation:** while overall accuracy drops, **recall** (sensitivity) for
+predicting churners jumps dramatically from **57.22%** to **79.41%**,
+capturing far more at-risk customers.
 
-### Why Accuracy is a Misleading Metric
-Accuracy is highly misleading for imbalanced datasets because a naive model that always predicts the majority class ("No Churn") will achieve **73.42%** accuracy without identifying a single actual churner. Thus, accuracy rewards models for ignoring the minority class. In churn prediction, missing a customer who is about to leave (a false negative) carries a high business cost, making **Recall** and **F1-Score** much more informative performance indicators than overall accuracy.
+### Why accuracy is a misleading metric here
+
+Accuracy is highly misleading for imbalanced datasets because a naive model
+that always predicts the majority class ("No Churn") will achieve **73.42%**
+accuracy without identifying a single actual churner. Accuracy therefore
+rewards models for ignoring the minority class. In churn prediction, missing
+a customer who is about to leave (a false negative) carries a high business
+cost, making **recall** and **F1-score** far more informative performance
+indicators than overall accuracy.
 
 ---
 
 ## Week 5 — Task 2: Titanic Survival Predictor Streamlit Web App
 
-**Goal:** Build an interactive, premium web application with Streamlit to load our best-performing pipeline and predict passenger survival, then deploy it for free.
+**Goal:** build an interactive, premium web application with Streamlit that
+loads our best-performing pipeline and predicts passenger survival, then
+deploy it for free.
 
-### App Description
-The web app load the serialized Titanic pipeline [titanic_pipeline.joblib](file:///c:/Users/User/OneDrive%20-%20Higher%20Education%20Commission/Desktop/NeuroFive/week4/titanic_pipeline.joblib) from Week 4. It includes the custom feature engineering step (`TitanicFeatureExtractor`) to transform raw inputs dynamically.
-The user enters passenger demographic details (Name, Title, Sex, Age) and travel details (Class, Port, Family, Fare), and the model displays whether they survived, including the exact probability.
+### App description
 
-* **Live Demo:** [Click here to view the app](https://neurofive-hassan.streamlit.app/)
+The web app loads the serialized Titanic pipeline
+[titanic_pipeline.joblib](file:///c:/Users/User/OneDrive%20-%20Higher%20Education%20Commission/Desktop/NeuroFive/week4/titanic_pipeline.joblib)
+from Week 4, including the custom feature engineering step
+(`TitanicFeatureExtractor`) to transform raw inputs dynamically. The user
+enters passenger demographic details (name, title, sex, age) and travel
+details (class, port, family, fare), and the model displays whether they
+survived, including the exact probability.
 
-### How to Run Locally
+**Live demo:** [Click here to view the app](https://neurofive-hassan.streamlit.app/)
+
+### How to run locally
 
 1. Install dependencies:
    ```bash
@@ -455,13 +547,23 @@ The user enters passenger demographic details (Name, Title, Sex, Age) and travel
 
 ## Week 6 — Capstone Project: Breast Cancer Diagnostic Screening
 
-**Goal:** Build an end-to-end Clinical Decision Support System (CDSS) for tumor classification (Malignant vs. Benign) using a clinically optimized 6-feature subset of the Breast Cancer Wisconsin dataset, benchmark multiple classifiers, and deploy a multi-tab Streamlit dashboard.
+**Goal:** build an end-to-end Clinical Decision Support System (CDSS) for
+tumor classification (malignant vs. benign) using a clinically optimized
+6-feature subset of the Breast Cancer Wisconsin dataset, benchmark multiple
+classifiers, and deploy a multi-tab Streamlit dashboard.
 
-### Problem Statement & Clinical Value
-Pathological mass evaluation via Fine Needle Aspirate (FNA) is critical, but manual cell reviews are time-consuming and subject to human observer error. Our system automates this diagnostic screening to provide a robust second opinion, drastically reducing false negatives and triaging urgent biopsies.
+### Problem statement & clinical value
 
-### Model Benchmarking Comparison
-We trained three classifiers on the top 6 features showing the highest correlation with malignancy:
+Pathological mass evaluation via Fine Needle Aspirate (FNA) is critical, but
+manual cell reviews are time-consuming and subject to human observer error.
+Our system automates this diagnostic screening to provide a robust second
+opinion, drastically reducing false negatives and helping triage urgent
+biopsies.
+
+### Model benchmarking comparison
+
+We trained three classifiers on the top 6 features showing the highest
+correlation with malignancy:
 
 | Model | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -469,21 +571,29 @@ We trained three classifiers on the top 6 features showing the highest correlati
 | **Random Forest** | **95.61%** | **95.83%** | 97.22% | **96.50%** | **99.51%** |
 | **XGBoost** | 93.86% | 94.44% | 95.83% | 95.14% | 99.20% |
 
-- *Verdict*: The system automatically selects the **Random Forest** model (cached on startup), achieving a high F1-Score of **96.50%** and **97.22% recall** (crucial for medical diagnosis to avoid missing malignant cases).
+**Verdict:** the system automatically selects the **Random Forest** model
+(cached on startup), achieving a high F1-score of **96.50%** and **97.22%
+recall** (crucial for medical diagnosis, to avoid missing malignant cases).
 
-### Case Study Summary
-1. **Clinical Context:** Early detection of breast cancer changes patient outcomes dramatically. FNA analysis has structural bottleneck risks.
-2. **Machine Learning Approach:** Feature extraction down to 6 highly predictive characteristics (e.g. concave points, boundary perimeter, cell radius) optimizes app usability and prevents model overfitting.
-3. **Medical/Business Value:** Maximizes detection rate (97%+ Recall), reduces lab costs, and optimizes laboratory triage.
+### Case study summary
 
-* **Live Demo:** [Click here to view the app](https://neurofive-realprob.streamlit.app/)
-### How to Run Locally
+1. **Clinical context:** early detection of breast cancer changes patient
+   outcomes dramatically. FNA analysis has structural bottleneck risks.
+2. **Machine learning approach:** feature extraction down to 6 highly
+   predictive characteristics (e.g. concave points, boundary perimeter, cell
+   radius) optimizes app usability and prevents model overfitting.
+3. **Medical/business value:** maximizes detection rate (97%+ recall),
+   reduces lab costs, and optimizes laboratory triage.
+
+**Live demo:** [Click here to view the app](https://neurofive-realprob.streamlit.app/)
+
+### How to run locally
 
 1. Install dependencies:
    ```bash
    pip install streamlit pandas numpy matplotlib seaborn scikit-learn xgboost
    ```
-2. Navigate to the `week 6` directory and run Streamlit:
+2. Navigate to the `week6` directory and run Streamlit:
    ```bash
    streamlit run final.py
    ```
