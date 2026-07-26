@@ -7,24 +7,33 @@
 ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝  ╚═══╝  ╚══════╝
 ```
 
-## ML Track — Week 1 & Week 2
+## ML Track — Week 1, Week 2 & Week 3
 
 My progress through the NeuroFive Solutions ML track. Week 1 covers environment
 setup, first exploratory data analysis (EDA), data cleaning, and visualization.
 Week 2 moves into modeling, starting with a first classification model on the
 Titanic dataset, then a first regression model on the Ames Housing dataset.
+Week 3 focuses on classification evaluation metrics (Precision, Recall, F1-score)
+and hyperparameter tuning using cross-validated Grid Search.
 
 ## Repo structure
 
 ```
 neurofive-ml-track/
-├── data/
-│   ├── train.csv                      # Titanic dataset (not committed — see below)
-│   └── train_house.csv                # Ames Housing dataset (not committed — see below)
-├── eda_titanic.ipynb                  # Jupyter notebook version
-├── eda_titanic.py                     # Same content as a plain script (VS Code # %% cells)
-├── housing_price_regression.ipynb     # Jupyter notebook version
-├── housing_price_regression.py        # Same content as a plain script (VS Code # %% cells)
+├── week1/
+│   ├── eda_titanic.ipynb              # Jupyter notebook version of Titanic EDA
+│   ├── task1.py                       # Python script version
+│   └── train.csv                      # Titanic dataset
+├── week2/
+│   ├── eda_titanic (week 2).ipynb     # Titanic modeling and analysis notebook
+│   ├── housing_price_regression.ipynb # House price regression notebook
+│   ├── task1.py                       # Titanic classification model script
+│   ├── task2.py                       # House price regression script
+│   ├── train house.csv                # Ames Housing dataset
+│   └── train.csv                      # Titanic dataset
+├── week3/
+│   ├── task1.py                       # Grid Search and classification report script
+│   └── train.csv                      # Titanic dataset
 ├── .gitignore
 └── README.md
 ```
@@ -165,16 +174,14 @@ predicts `Survived` and evaluate it properly, not just by eyeballing accuracy.
    confusion matrix to see *what kind* of mistakes the model makes, not just
    how many.
 
-**Final accuracy:** `<fill in your actual accuracy here after running it — a
-well-tuned Logistic Regression baseline on this dataset typically lands
-somewhere in the 78–82% range>`
+**Final accuracy:** **80.45%**
 
 **Confusion matrix — what it tells us:**
 
 |  | Predicted: Did not survive | Predicted: Survived |
 |---|---|---|
-| **Actual: Did not survive** | True Negative | False Positive |
-| **Actual: Survived** | False Negative | True Positive |
+| **Actual: Did not survive** | **96** (True Negative) | **14** (False Positive) |
+| **Actual: Survived** | **21** (False Negative) | **48** (True Positive) |
 
 Accuracy alone hides *which* kind of mistake the model makes. False positives
 mean the model was overly optimistic (predicted survival for someone who
@@ -183,10 +190,6 @@ someone who survived). Because the model leans heavily on `Sex` and `Pclass`
 (the two strongest signals identified in Task 2), its errors tend to cluster
 around the exceptions to that pattern — men who survived, and women or
 first-class passengers who didn't.
-
-*(Fill in the actual TN/FP/FN/TP counts and accuracy once you run the notebook
-on your machine — the numbers above describe the pattern, not the exact
-values for your run.)*
 
 ---
 
@@ -241,6 +244,37 @@ far from perfect.
 *(These numbers come from a `random_state=42` split — re-running with a
 different split will shift them slightly, but the overall pattern should
 hold.)*
+
+---
+
+## Week 3 — Task 1: Classification Metrics & Hyperparameter Tuning
+
+**Goal:** Evaluate a classification model using advanced metrics (Precision, Recall, F1-score) and perform hyperparameter tuning using cross-validated Grid Search.
+
+### Why Accuracy Alone is Misleading for Imbalanced Datasets
+Accuracy measures the proportion of correct predictions out of all predictions. While simple, it can be extremely misleading when classes are highly imbalanced. For example, if a dataset contains 95% non-survivors and 5% survivors, a naive classifier that predicts "did not survive" for everyone will achieve 95% accuracy. However, this model completely fails to identify survivors (Recall of 0% and Precision of 0% for survivors). 
+By evaluating metrics like **Precision** (avoiding false positives), **Recall** (avoiding false negatives), and **F1-score** (harmonic mean of the two), we get a realistic picture of how the model performs on the minority class of interest.
+
+### Tuning & Grid Search
+We tuned the Logistic Regression model using `GridSearchCV` with 5-fold cross-validation. The tuned hyperparameters were:
+- `C` (Inverse of regularization strength): tested `[0.001, 0.01, 0.1, 1, 10, 100]`
+- `penalty` (Regularization type): tested `['l1', 'l2']` with `liblinear` solver.
+
+The grid search identified the best parameters on the training set:
+- **Best Hyperparameters:** `{'C': 0.1, 'penalty': 'l2'}`
+- **Best Cross-Validation (CV) Accuracy:** 79.79%
+
+### Performance Comparison: Before vs After
+Below is the comparison of the baseline model (default parameters, `C=1.0`, `penalty='l2'`) and the tuned model (`C=0.1`, `penalty='l2'`) evaluated on the holdout test set (20% of the data):
+
+| Metric | Baseline Model | Tuned Model |
+|---|---|---|
+| **Accuracy** | 80.45% | 78.77% |
+| **Precision (Survived)** | 77.42% | 78.18% |
+| **Recall (Survived)** | 69.57% | 62.32% |
+| **F1-Score (Survived)** | 73.28% | 69.35% |
+
+*Note on results:* Although the tuned model achieved a better and more robust cross-validation score during search, the test accuracy was slightly lower than the baseline. This can happen due to minor variance on a relatively small test set (179 samples), or because the baseline's default regularization strength happened to align slightly better with the test set sample split.
 
 ---
 
