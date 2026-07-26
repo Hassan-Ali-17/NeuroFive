@@ -6,7 +6,7 @@
 ██║ ╚████║███████╗╚██████╔╝██║  ██║╚██████╔╝██║     ██║ ╚████╔╝ ███████╗
 ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝  ╚═══╝  ╚══════╝
 
-## ML Track — Week 1 to Week 5
+## ML Track — Week 1 to Week 6
 
 My progress through the NeuroFive Solutions ML track:
 - **Week 1:** Environment setup, first exploratory data analysis (EDA), data cleaning, and visualization.
@@ -14,6 +14,7 @@ My progress through the NeuroFive Solutions ML track:
 - **Week 3:** Advanced classification metrics, cross-validated Grid Search, and Telco Customer Churn.
 - **Week 4:** Pipelines, ColumnTransformers, custom feature engineering, and ensemble comparison (RandomForest vs XGBoost).
 - **Week 5:** Class imbalance handling (class weighting) on Telco Churn, metric analysis, and building/deploying a Streamlit web app for Titanic Survival Prediction.
+- **Week 6:** Capstone Project — Breast Cancer Wisconsin tumor classification, model benchmarking, and multi-tab Streamlit dashboard deployment.
 
 ## Repo structure
 
@@ -46,6 +47,8 @@ neurofive-ml-track/
 │   ├── task1.py                       # Churn class imbalance handling & metrics comparison
 │   ├── task2.py                       # Titanic survival predictor Streamlit app
 │   └── WA_Fn-UseC_-Telco-Customer-Churn.csv # Telco Customer Churn dataset
+├── week 6/
+│   └── final.py                       # Breast cancer diagnostic Streamlit app (Capstone)
 ├── .gitignore
 └── README.md
 ```
@@ -446,4 +449,42 @@ The user enters passenger demographic details (Name, Title, Sex, Age) and travel
 2. Navigate to the `week5` directory and run Streamlit:
    ```bash
    streamlit run task2.py
+   ```
+
+---
+
+## Week 6 — Capstone Project: Breast Cancer Diagnostic Screening
+
+**Goal:** Build an end-to-end Clinical Decision Support System (CDSS) for tumor classification (Malignant vs. Benign) using a clinically optimized 6-feature subset of the Breast Cancer Wisconsin dataset, benchmark multiple classifiers, and deploy a multi-tab Streamlit dashboard.
+
+### Problem Statement & Clinical Value
+Pathological mass evaluation via Fine Needle Aspirate (FNA) is critical, but manual cell reviews are time-consuming and subject to human observer error. Our system automates this diagnostic screening to provide a robust second opinion, drastically reducing false negatives and triaging urgent biopsies.
+
+### Model Benchmarking Comparison
+We trained three classifiers on the top 6 features showing the highest correlation with malignancy:
+
+| Model | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Logistic Regression** | 94.74% | 94.52% | 97.22% | 95.89% | 99.41% |
+| **Random Forest** | **95.61%** | **95.83%** | 97.22% | **96.50%** | **99.51%** |
+| **XGBoost** | 93.86% | 94.44% | 95.83% | 95.14% | 99.20% |
+
+- *Verdict*: The system automatically selects the **Random Forest** model (cached on startup), achieving a high F1-Score of **96.50%** and **97.22% recall** (crucial for medical diagnosis to avoid missing malignant cases).
+
+### Case Study Summary
+1. **Clinical Context:** Early detection of breast cancer changes patient outcomes dramatically. FNA analysis has structural bottleneck risks.
+2. **Machine Learning Approach:** Feature extraction down to 6 highly predictive characteristics (e.g. concave points, boundary perimeter, cell radius) optimizes app usability and prevents model overfitting.
+3. **Medical/Business Value:** Maximizes detection rate (97%+ Recall), reduces lab costs, and optimizes laboratory triage.
+
+* **Live Demo:** [Click here to view the app](https://neurofive-breast-cancer.streamlit.app) *(Replace with actual deployed URL once deployed)*
+
+### How to Run Locally
+
+1. Install dependencies:
+   ```bash
+   pip install streamlit pandas numpy matplotlib seaborn scikit-learn xgboost
+   ```
+2. Navigate to the `week 6` directory and run Streamlit:
+   ```bash
+   streamlit run final.py
    ```
