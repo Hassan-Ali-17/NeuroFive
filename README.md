@@ -435,7 +435,7 @@ Accuracy is highly misleading for imbalanced datasets because a naive model that
 The web app load the serialized Titanic pipeline [titanic_pipeline.joblib](file:///c:/Users/User/OneDrive%20-%20Higher%20Education%20Commission/Desktop/NeuroFive/week4/titanic_pipeline.joblib) from Week 4. It includes the custom feature engineering step (`TitanicFeatureExtractor`) to transform raw inputs dynamically.
 The user enters passenger demographic details (Name, Title, Sex, Age) and travel details (Class, Port, Family, Fare), and the model displays whether they survived, including the exact probability.
 
-* **Live Demo:** [Click here to view the app](https://neurofive-titanic-predictor.streamlit.app) *(Replace with actual deployed URL once deployed)*
+* **Live Demo:** [Click here to view the app](https://neurofive-hassan.streamlit.app/) *(Replace with actual deployed URL once deployed)*
 
 ### How to Run Locally
 
@@ -447,11 +447,3 @@ The user enters passenger demographic details (Name, Title, Sex, Age) and travel
    ```bash
    streamlit run task2.py
    ```
-
-### How to Deploy to Streamlit Community Cloud (For Free)
-
-1. Sign up for a free account on [Streamlit Share](https://share.streamlit.io/).
-2. Connect your GitHub account.
-3. Click **New app**, select this repository (`NeuroFive`), branch (`main`), and set the main file path to `week5/task2.py`.
-4. Click **Deploy!** Your app will be live at a public URL in a couple of minutes.
-5. Paste your live link in the **Live Demo** link above!
