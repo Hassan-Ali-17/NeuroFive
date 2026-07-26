@@ -476,8 +476,7 @@ We trained three classifiers on the top 6 features showing the highest correlati
 2. **Machine Learning Approach:** Feature extraction down to 6 highly predictive characteristics (e.g. concave points, boundary perimeter, cell radius) optimizes app usability and prevents model overfitting.
 3. **Medical/Business Value:** Maximizes detection rate (97%+ Recall), reduces lab costs, and optimizes laboratory triage.
 
-* **Live Demo:** [Click here to view the app](https://neurofive-breast-cancer.streamlit.app) *(Replace with actual deployed URL once deployed)*
-
+* **Live Demo:** [Click here to view the app](https://neurofive-realprob.streamlit.app/)
 ### How to Run Locally
 
 1. Install dependencies:
