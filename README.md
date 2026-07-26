@@ -435,7 +435,7 @@ Accuracy is highly misleading for imbalanced datasets because a naive model that
 The web app load the serialized Titanic pipeline [titanic_pipeline.joblib](file:///c:/Users/User/OneDrive%20-%20Higher%20Education%20Commission/Desktop/NeuroFive/week4/titanic_pipeline.joblib) from Week 4. It includes the custom feature engineering step (`TitanicFeatureExtractor`) to transform raw inputs dynamically.
 The user enters passenger demographic details (Name, Title, Sex, Age) and travel details (Class, Port, Family, Fare), and the model displays whether they survived, including the exact probability.
 
-* **Live Demo:** [Click here to view the app](https://neurofive-hassan.streamlit.app/) *(Replace with actual deployed URL once deployed)*
+* **Live Demo:** [Click here to view the app](https://neurofive-hassan.streamlit.app/)
 
 ### How to Run Locally
 
