@@ -13,7 +13,7 @@ My progress through the NeuroFive Solutions ML track:
 - **Week 2:** Classification model (Titanic) and Regression model (Ames Housing).
 - **Week 3:** Advanced classification metrics, cross-validated Grid Search, and Telco Customer Churn.
 - **Week 4:** Pipelines, ColumnTransformers, custom feature engineering, and ensemble comparison (RandomForest vs XGBoost).
-- **Week 5:** Class imbalance handling (SMOTE/class weighting) on Telco Churn and evaluation metrics analysis.
+- **Week 5:** Class imbalance handling (class weighting) on Telco Churn, metric analysis, and building/deploying a Streamlit web app for Titanic Survival Prediction.
 
 ## Repo structure
 
@@ -44,6 +44,7 @@ neurofive-ml-track/
 ├── week5/
 │   ├── class_balance.png              # Churn class distribution plot
 │   ├── task1.py                       # Churn class imbalance handling & metrics comparison
+│   ├── task2.py                       # Titanic survival predictor Streamlit app
 │   └── WA_Fn-UseC_-Telco-Customer-Churn.csv # Telco Customer Churn dataset
 ├── .gitignore
 └── README.md
@@ -423,3 +424,34 @@ Evaluating a Logistic Regression model on the test set:
 
 ### Why Accuracy is a Misleading Metric
 Accuracy is highly misleading for imbalanced datasets because a naive model that always predicts the majority class ("No Churn") will achieve **73.42%** accuracy without identifying a single actual churner. Thus, accuracy rewards models for ignoring the minority class. In churn prediction, missing a customer who is about to leave (a false negative) carries a high business cost, making **Recall** and **F1-Score** much more informative performance indicators than overall accuracy.
+
+---
+
+## Week 5 — Task 2: Titanic Survival Predictor Streamlit Web App
+
+**Goal:** Build an interactive, premium web application with Streamlit to load our best-performing pipeline and predict passenger survival, then deploy it for free.
+
+### App Description
+The web app load the serialized Titanic pipeline [titanic_pipeline.joblib](file:///c:/Users/User/OneDrive%20-%20Higher%20Education%20Commission/Desktop/NeuroFive/week4/titanic_pipeline.joblib) from Week 4. It includes the custom feature engineering step (`TitanicFeatureExtractor`) to transform raw inputs dynamically.
+The user enters passenger demographic details (Name, Title, Sex, Age) and travel details (Class, Port, Family, Fare), and the model displays whether they survived, including the exact probability.
+
+* **Live Demo:** [Click here to view the app](https://neurofive-titanic-predictor.streamlit.app) *(Replace with actual deployed URL once deployed)*
+
+### How to Run Locally
+
+1. Install dependencies:
+   ```bash
+   pip install streamlit pandas joblib scikit-learn
+   ```
+2. Navigate to the `week5` directory and run Streamlit:
+   ```bash
+   streamlit run task2.py
+   ```
+
+### How to Deploy to Streamlit Community Cloud (For Free)
+
+1. Sign up for a free account on [Streamlit Share](https://share.streamlit.io/).
+2. Connect your GitHub account.
+3. Click **New app**, select this repository (`NeuroFive`), branch (`main`), and set the main file path to `week5/task2.py`.
+4. Click **Deploy!** Your app will be live at a public URL in a couple of minutes.
+5. Paste your live link in the **Live Demo** link above!
